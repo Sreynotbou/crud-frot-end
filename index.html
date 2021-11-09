@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="form-container">
+            <div class="form-group">
+                <input type="number" placeholder="book_id" v-model="book_id">
+            </div>
+            <div class="form-group">
+                <input type="text" placeholder="title" v-model="title">
+            </div>
+            <div class="form-group">
+                <textarea name="" id="" rows="5" placeholder="body" v-model="body"></textarea>
+            </div>
+            <div class="form-group">
+                <button type="button" @click="createbook" v-if="!isHidden">Add Book</button>
+                <button type="button" @click="updatebook" v-if="isHidden">Updated Book</button>
+            </div>
+        </div>
+        <section class="container">
+
+            <div class="card" v-for="(book,index) in books" :key="index">
+                <div class="card-title">
+                    <h1>{{book.title}}</h1>
+                </div>
+                <div class="card-body">
+                    <p>{{book.body}}</p>
+                </div>
+                <div class="card-footer">
+                    <p>{{book.id}}</p>
+                    <button type="button" v-on:click="removebook(todo.id)">Delete</button>
+                    <button type="button" v-on:click="Editbook(todo)">Edit</button>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            books: [],
+            book_id: null,
+            title: '',
+            body: '',
+            updateId: null,
+            isHidden: false
+
+        },
+        methods: {
+            getbook() {
+                let url = "http://localhost:8000/api/books";
+                axios
+                    .get(url)
+                    .then(response => {
+                        this.books = response.data;
+                    })
+            },
+            createbook() {
+                let data = { book_id: parseInt(this.book_id), title: this.title, body: this.body }
+                let url = "http://localhost:8000/api/books";
+                axios
+                    .post(url, data)
+                    .then(response => {
+                        console.log(response.data)
+                    })
+            },
+            removebook(id) {
+                // this.todos.splice(index,1);
+                let url = "http://localhost:8000/api/books";
+                axios.delete(this.url + '/' + id).then(() => {
+                    window.location.reload();
+                })
+            },
+            // edit todo
+            Editbook(book) {
+                this.book_id = book.book_id;
+                this.title = book.title;
+                this.body = book.body;
+                this.updateId = book.id;
+                this.isHidden = true;
+            },
+            updatebook() {
+                let data = { book_id: parseInt(this.book_id), title: this.title, body: this.body };
+                let url = "http://localhost:8000/api/books";
+                axios.put(url + '/' + this.updateId, data).then((respon) => {
+                    window.location.reload();
+                });
+                this.isHidden = false;
+            }
+        },
+        mounted() {
+            this.getbook()
+        },
+    })
+</script>
+
+</html>
